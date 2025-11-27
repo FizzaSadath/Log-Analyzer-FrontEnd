@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { setFilters } from "../logsSlice";
 
 export default function FilterOptions() {
-  // state variables
+  const dispatch = useDispatch();
+
   const [levels, setLevels] = useState([]);
   const [components, setComponents] = useState([]);
   const [hosts, setHosts] = useState([]);
   const [requestId, setRequestId] = useState("");
   const [timeStamp, setTimeStamp] = useState("");
 
-  // checkbox update logic
   const handleCheckbox = (value, list, setList) => {
     if (list.includes(value)) {
       setList(list.filter((item) => item !== value));
@@ -82,7 +84,6 @@ export default function FilterOptions() {
           </FormGroup>
         </div>
 
-        {/* Request ID */}
         {/* Request ID + Timestamp Row */}
         <div className="flex gap-6">
           {/* Request ID */}
@@ -115,15 +116,17 @@ export default function FilterOptions() {
       <div className="w-full flex justify-center mt-6">
         <button
           className="px-10 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition"
-          onClick={() => {
-            console.log("Filters:", {
-              levels,
-              components,
-              hosts,
-              requestId,
-              timeStamp,
-            });
-          }}
+          onClick={() =>
+            dispatch(
+              setFilters({
+                levels,
+                components,
+                hosts,
+                requestId,
+                timeStamp,
+              })
+            )
+          }
         >
           Search
         </button>
