@@ -13,7 +13,8 @@ export const fetchLogs = createAsyncThunk(
           components: filters.components ?? [],
           hosts: filters.hosts ?? [],
           requestId: filters.requestId ?? "",
-          timeStamp: filters.timeStamp ?? "",
+          startTime: filters.startTime ?? "",
+          endTime: filters.endTime ?? "",
         },
         {
           params: { page, pageSize },
@@ -27,7 +28,6 @@ export const fetchLogs = createAsyncThunk(
         pageSize,
       };
     } catch (err) {
-      // Normalize error
       return rejectWithValue(err.response?.data || { message: err.message });
     }
   }
@@ -45,7 +45,8 @@ const initialState = {
     components: [],
     hosts: [],
     requestId: "",
-    timeStamp: "",
+    startTime: "",
+    endTime: "",
   },
 };
 
@@ -59,12 +60,10 @@ const logsSlice = createSlice({
     setPageSize(state, action) {
       state.pageSize = action.payload;
     },
-    // when filters change, reset page to 0
     setFilters(state, action) {
       state.filters = action.payload;
-      state.page = 0;
+      state.page = 0; // reset
     },
-    // optional: set single filter field
     resetFilters(state) {
       state.filters = initialState.filters;
       state.page = 0;
@@ -79,7 +78,7 @@ const logsSlice = createSlice({
       .addCase(fetchLogs.fulfilled, (state, action) => {
         state.loading = false;
         state.error = null;
-        // Map entries to DataGrid-friendly rows here (if needed)
+
         state.rows = action.payload.entries.map((e, index) => ({
           id: action.payload.page * action.payload.pageSize + index + 1,
           timestamp: e.TimeStamp,
@@ -89,8 +88,8 @@ const logsSlice = createSlice({
           requestid: e.RequestId,
           message: e.Message,
         }));
+
         state.total = action.payload.total;
-        // keep page/pageSize as they are (already passed)
       })
       .addCase(fetchLogs.rejected, (state, action) => {
         state.loading = false;
