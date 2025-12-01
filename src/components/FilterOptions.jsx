@@ -17,6 +17,7 @@ export default function FilterOptions() {
 
   const [startTime, setStartTime] = useState(null);
   const [endTime, setEndTime] = useState(null);
+  const [timeError, setTimeError] = useState("");
 
   const handleCheckbox = (value, list, setList) => {
     if (list.includes(value)) {
@@ -27,6 +28,12 @@ export default function FilterOptions() {
   };
 
   const handleSearch = () => {
+    if (startTime && endTime && new Date(endTime) < new Date(startTime)) {
+      setTimeError("End time cannot be earlier than start time.");
+      return;
+    }
+
+    setTimeError("");
     dispatch(
       setFilters({
         levels,
@@ -41,115 +48,139 @@ export default function FilterOptions() {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs}>
-      <div className="w-full p-6">
-        <div className="flex flex-wrap gap-6">
-          {/* Level */}
-          <div className="w-60 bg-white p-4 rounded-xl shadow border border-gray-300">
-            <h3 className="text-lg font-semibold mb-2">Level</h3>
-            <FormGroup>
-              {["INFO", "ERROR", "DEBUG", "WARN"].map((lvl) => (
-                <FormControlLabel
-                  key={lvl}
-                  control={
-                    <Checkbox
-                      checked={levels.includes(lvl)}
-                      onChange={() => handleCheckbox(lvl, levels, setLevels)}
-                    />
-                  }
-                  label={lvl}
-                />
-              ))}
-            </FormGroup>
-          </div>
+      <div className="w-full min-h-screen bg-slate-100 py-10 px-6">
+        {/* Page Title */}
+        <h1 className="text-3xl font-bold text-center text-black-000 mb-10 tracking-wide">
+          LOG ANALYZER
+        </h1>
 
-          {/* Component */}
-          <div className="w-60 bg-white p-4 rounded-xl shadow border border-gray-300">
-            <h3 className="text-lg font-semibold mb-2">Component</h3>
-            <FormGroup>
-              {["api-server", "auth", "cache", "database", "worker"].map(
-                (cmp) => (
+        {/* Filter Box */}
+        <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-10">
+          {/* CENTER ALL FILTERS */}
+          <div className="flex flex-wrap gap-10 justify-center">
+            {/* Level */}
+            <div className="w-64 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+              <h3 className="text-lg font-semibold text-black-000 mb-3">
+                Level
+              </h3>
+              <FormGroup className="space-y-1">
+                {["INFO", "ERROR", "DEBUG", "WARN"].map((lvl) => (
                   <FormControlLabel
-                    key={cmp}
+                    key={lvl}
                     control={
                       <Checkbox
-                        checked={components.includes(cmp)}
-                        onChange={() =>
-                          handleCheckbox(cmp, components, setComponents)
-                        }
+                        checked={levels.includes(lvl)}
+                        onChange={() => handleCheckbox(lvl, levels, setLevels)}
                       />
                     }
-                    label={cmp}
+                    label={lvl}
                   />
-                )
-              )}
-            </FormGroup>
-          </div>
+                ))}
+              </FormGroup>
+            </div>
 
-          {/* Host */}
-          <div className="w-60 bg-white p-4 rounded-xl shadow border border-gray-300">
-            <h3 className="text-lg font-semibold mb-2">Host</h3>
-            <FormGroup>
-              {["cache01", "db01", "web01", "web02", "worker"].map((hst) => (
-                <FormControlLabel
-                  key={hst}
-                  control={
-                    <Checkbox
-                      checked={hosts.includes(hst)}
-                      onChange={() => handleCheckbox(hst, hosts, setHosts)}
+            {/* Component */}
+            <div className="w-64 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+              <h3 className="text-lg font-semibold text-black-000 mb-3">
+                Component
+              </h3>
+              <FormGroup className="space-y-1">
+                {["api-server", "auth", "cache", "database", "worker"].map(
+                  (cmp) => (
+                    <FormControlLabel
+                      key={cmp}
+                      control={
+                        <Checkbox
+                          checked={components.includes(cmp)}
+                          onChange={() =>
+                            handleCheckbox(cmp, components, setComponents)
+                          }
+                        />
+                      }
+                      label={cmp}
                     />
-                  }
-                  label={hst}
+                  )
+                )}
+              </FormGroup>
+            </div>
+
+            {/* Host */}
+            <div className="w-64 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+              <h3 className="text-lg font-semibold text-black-000 mb-3">
+                Host
+              </h3>
+              <FormGroup className="space-y-1">
+                {["cache01", "db01", "web01", "web02", "worker"].map((hst) => (
+                  <FormControlLabel
+                    key={hst}
+                    control={
+                      <Checkbox
+                        checked={hosts.includes(hst)}
+                        onChange={() => handleCheckbox(hst, hosts, setHosts)}
+                      />
+                    }
+                    label={hst}
+                  />
+                ))}
+              </FormGroup>
+            </div>
+
+            {/* Request ID */}
+            <div className="w-64 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+              <h3 className="text-lg font-semibold text-black-000 mb-3">
+                Request ID
+              </h3>
+              <input
+                type="text"
+                placeholder="req-4leuyy-5910"
+                value={requestId}
+                onChange={(e) => setRequestId(e.target.value)}
+                className="w-full px-2 py-2 border border-gray-300 rounded-lg bg-white 
+                         focus:ring-2 focus:ring-purple-300 focus:outline-none h-10"
+              />
+            </div>
+
+            <div className="flex flex-row gap-6">
+              {/* Start Time */}
+              <div className="w-72 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+                <h3 className="text-lg font-semibold text-black-000 mb-3">
+                  Start Time
+                </h3>
+                <DateTimePicker
+                  format="YYYY-MM-DD HH:mm:ss"
+                  value={startTime}
+                  onChange={(val) => setStartTime(val)}
                 />
-              ))}
-            </FormGroup>
-          </div>
+              </div>
 
-          {/* Request ID */}
-          <div className="w-60 bg-white p-4 rounded-xl shadow border border-gray-300">
-            <h3 className="text-lg font-semibold mb-2">Request ID</h3>
-            <input
-              type="text"
-              placeholder="req-4leuyy-5910"
-              value={requestId}
-              onChange={(e) => setRequestId(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg bg-gray-50"
-            />
-          </div>
-
-          {/* Date Range */}
-          <div className="flex flex-col gap-4">
-            {/* Start Time */}
-            <div className="w-65 bg-white p-4 rounded-xl shadow border border-gray-300">
-              <h3 className="text-lg font-semibold mb-2">Start Time</h3>
-              <DateTimePicker
-                format="YYYY-MM-DD HH:mm:ss"
-                value={startTime}
-                onChange={(val) => setStartTime(val)}
-              />
-            </div>
-
-            {/* End Time */}
-            <div className="w-65 bg-white p-4 rounded-xl shadow border border-gray-300">
-              <h3 className="text-lg font-semibold mb-2">End Time</h3>
-              <DateTimePicker
-                format="YYYY-MM-DD HH:mm:ss"
-                value={endTime}
-                onChange={(val) => setEndTime(val)}
-              />
+              {/* End Time */}
+              <div className="w-72 bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm hover:shadow transition">
+                <h3 className="text-lg font-semibold text-black-000 mb-3">
+                  End Time
+                </h3>
+                <DateTimePicker
+                  format="YYYY-MM-DD HH:mm:ss"
+                  value={endTime}
+                  onChange={(val) => setEndTime(val)}
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Search button */}
-        <div className="w-full flex justify-center mt-6">
-          <button
-            className="px-10 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow transition"
-            onClick={handleSearch}
-          >
-            Search
-          </button>
+          {/* Search Button */}
+          <div className="w-full flex justify-center mt-12">
+            <button
+              className="px-14 py-3 bg-gray-600 hover:bg-purple-700 text-white text-lg font-semibold rounded-xl shadow-md transition-all hover:scale-[1.03]"
+              onClick={handleSearch}
+            >
+              Search
+            </button>
+          </div>
         </div>
       </div>
+      {timeError && (
+        <p className="text-red-600 font-medium mt-2">{timeError}</p>
+      )}
     </LocalizationProvider>
   );
 }
